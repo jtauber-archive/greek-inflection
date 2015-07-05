@@ -1,0 +1,173 @@
+PAI:
+    - stem/(.*[^αεοη!])$ + pa1
+    - stem/(.*[αεοη])$ + pa2
+    - stem/(.*)!$ + pa3
+
+PMI:
+    - stem/(.*[^αεοη!])$ + pmp1
+    - stem/(.*[αεοη])$ + pmp2
+    - stem/(.*)!$ + pmp3
+
+PPI:
+    - stem/(.*[^αεοη!])$ + pmp1
+    - stem/(.*[αεοη])$ + pmp2
+    - stem/(.*)!$ + pmp3
+
+PAN:
+    - stem/(.*[^αεοη!])$ + pa.inf1
+    - stem/(.*[αεοη])$ + pa.inf2
+    - stem/(.*)!$ + pa.inf3
+
+PMN:
+    - stem/(.*[^αεοη!])$ + pmp.inf1
+    - stem/(.*[αεοη])$ + pmp.inf2
+    - stem/(.*)!$ + pmp.inf3
+
+PPN:
+    - stem/(.*[^αεοη!])$ + pmp.inf1
+    - stem/(.*[αεοη])$ + pmp.inf2
+    - stem/(.*)!$ + pmp.inf3
+
+PAP:
+    - stem/()$ + pa.part1
+    - stem/(.*[^αεοη!])$ + pa.part1
+    - stem/(.*[αεοη])$ + pa.part2
+    - stem/(.*)!$ + pa.part3
+
+PMP:
+    - stem/(.*[^αεοη!])$ + pmp.part1
+    - stem/(.*[αεοη])$ + pmp.part2
+    - stem/(.*)!$ + pmp.part3
+
+PPP:
+    - stem/(.*[^αεοη!])$ + pmp.part1
+    - stem/(.*[αεοη])$ + pmp.part2
+    - stem/(.*)!$ + pmp.part3
+
+FAP:
+    - stem + pa.part1
+
+FMP:
+    - stem + pmp.part1
+
+FPP:
+    - stem + pmp.part1
+
+IAI:
+    - stem/(.*[^αεοη!^])$ + sa1
+    - stem/(.*[αεοη])$ + sa2
+    - stem/(.*)!$ + sa3
+    - stem/(.*)\^$ + sa4
+
+IMI:
+    - stem/(.*[^αεο!])$ + smp1
+    - stem/(.*[αεο])$ + smp2
+    - stem/(.*)!$ + smp3
+
+IPI:
+    - stem/(.*[^αεο!])$ + smp1
+    - stem/(.*[αεο])$ + smp2
+    - stem/(.*)!$ + smp3
+
+FAI:
+    - stem + pa1
+
+FMI:
+    - stem/(.*)!$ + pmp1
+    - stem/(.*[^!])$ + pmp1
+
+FAN:
+    - stem + pa.inf1
+
+FMN:
+    - stem/(.*)!$ + pmp.inf1
+    - stem/(.*[^!])$ + pmp.inf1
+
+FPI:
+    - stem + pmp1
+
+FPN:
+    - stem + pmp.inf1
+
+AAI:
+    - stem/(.*[^%!^])$ + aa1
+    - stem/(.*)%$ + sa1
+    - stem/(.*)!$ + sa3
+    - stem/(.*)\^$ + sa4
+
+AMI:
+    - stem/(.*[^%!^])$ + am1
+    - stem/(.*)%$ + smp1
+    - stem/(.*)!$ + smp4
+
+API:
+    - stem + ap1
+
+AAN:
+    - stem/(.*[^%!ο^])$ + aa.inf1
+    - stem/(.*)!$ + aa.inf3
+    - stem/(.*)\^$ + aa.inf4
+    - stem/(.*)%$ + aa.inf2
+    - stem/(.*ο)$ + aa.inf5  # @@@
+
+AMN:
+    - stem/(.*[^%!^])$ + am.inf1
+    - stem/(.*)%$ + am.inf2
+    - stem/(.*)!$ + pmp.inf3
+
+APN:
+    - stem + ap.inf1
+
+AAP:
+    - stem/(.*[^%!^])$ + aa.part1
+    - stem/(.*)%$ + pa.part1
+    - stem/(.*)!$ + aa.part3
+    - stem/(.*)\^$ + aa.part3
+
+AMP:
+    - stem/(.*[^%!^])$ + am.part1
+    - stem/(.*)%$ + pmp.part1
+    - stem/(.*)!$ + pmp.part3
+
+APP:
+    - stem + ap.part1
+
+XAI:
+    - stem/(.*[^!])$ + xa1
+    - stem/(.*)!$ + xa3
+
+YAI:
+    - stem/(.*[^!])$ + ya1
+    - stem/(.*)!$ + ya3
+
+XAN:
+    - stem/(.*[^!])$ + xa.inf1
+    - stem/(.*)!$ + xa.inf3
+
+XMI:
+    - stem + pmp3
+
+XPI:
+    - stem + pmp3
+
+YMI:
+    - stem + smp3
+
+YPI:
+    - stem + smp3
+
+XMN:
+    - stem + xmp.inf1
+
+XPN:
+    - stem + xmp.inf1
+
+XAP:
+    - stem/(.*[^!])$ + xa.part1
+    - stem/(.*)!$ + xa.part3
+
+XMP:
+    - stem + xmp.part3
+
+XPP:
+    - stem + xmp.part3

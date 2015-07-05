@@ -1,3 +1,6 @@
+from functools import reduce
+
+
 class Counter:
     def __init__(self):
         self.success_count = 0
@@ -25,3 +28,10 @@ class Counter:
             print("first fail: {}".format(self.first_fail))
         if self.first_skip:
             print("first skip: {}".format(self.first_skip))
+
+
+def remove_duplicates(l):
+    "removes duplicates in a list while maintaining insertion order"
+    if not l:
+        return []
+    return reduce(lambda a, b: b[0] in a and a or a + b, [[i] for i in l])
