@@ -62,7 +62,7 @@ class Stemmer:
                 result = v
         return result
 
-    def stem(self, location, lemma, parse, norm):
+    def stem(self, location, lemma, parse, norm, test_length):
         stem_set = set()
 
         norm = debreath(norm)
@@ -77,6 +77,8 @@ class Stemmer:
                     return
             for entry in pairs:
                 if isinstance(entry, str):
+                    if not test_length:
+                        entry = strip_length(entry)
                     s1, s234, s5 = entry.split("|")
                     s2, s34 = s234.split(">")
                     s3, s4 = s34.split("<")
