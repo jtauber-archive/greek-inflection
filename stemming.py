@@ -8,6 +8,24 @@ import yaml
 from utils import Counter
 
 
+def debreath(word):
+    word = word.replace("εἷ", "hεῖ")
+    word = word.replace("εἵ", "hεί")
+    word = word.replace("εἱ", "hει")
+    word = word.replace("ἕ", "hέ")
+    word = word.replace("ἑ", "hε")
+    return word
+
+
+def rebreath(word):
+    word = word.replace("hεῖ", "εἷ")
+    word = word.replace("hεί", "εἵ")
+    word = word.replace("hει", "εἱ")
+    word = word.replace("hέ", "ἕ")
+    word = word.replace("hε", "ἑ")
+    return word
+
+
 class Stemmer:
 
     def __init__(self, lexicon):
@@ -47,6 +65,8 @@ class Stemmer:
     def stem(self, location, lemma, parse, norm):
         stem_set = set()
 
+        norm = debreath(norm)
+
         if parse in self.stemming_rules:
             pairs = self.stemming_rules[parse]
             while isinstance(pairs, dict) and "ref" in pairs:
@@ -68,7 +88,7 @@ class Stemmer:
                 else:
                     regex_pair = entry
                 if re.match(regex_pair[0] + "$", norm):
-                    stem_set.add(strip_accents(re.sub(regex_pair[0], r"\1" + regex_pair[1], norm)))
+                    stem_set.add(rebreath(strip_accents(re.sub(regex_pair[0], r"\1" + regex_pair[1], norm))))
         else:
             self.counter.skip("no stemming rule for {} (form was {})".format(parse, norm))
             return
