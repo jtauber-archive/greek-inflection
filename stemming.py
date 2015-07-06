@@ -110,9 +110,21 @@ class Stemmer:
         stem_set = set()
 
         if "citation" in self.stemming_rules:
-            for regex_pair in self.stemming_rules["citation"]:
+            pairs = self.stemming_rules["citation"]
+            for entry in pairs:
+                if isinstance(entry, str):
+                    s1, s234, s5 = entry.split("|")
+                    s2, s34 = s234.split(">")
+                    s3, s4 = s34.split("<")
+                    s3 = s3.replace("(", "\\(")
+                    s3 = s3.replace(")", "\\)")
+                    s5 = s5.replace("(", "\\(")
+                    s5 = s5.replace(")", "\\)")
+                    regex_pair = ["(.*{}){}{}".format(s1, s3, s5), s2]
+                else:
+                    regex_pair = entry
                 if re.match(regex_pair[0] + "$", lemma):
-                    stem_set.add(strip_accents(re.sub(regex_pair[0], r"\1" + regex_pair[1], lemma)))
+                    stem_set.add(rebreath(strip_accents(re.sub(regex_pair[0], r"\1" + regex_pair[1], lemma))))
         else:
             self.counter.fail("! no stemming rule (lemma was {})".format(lemma))
             return
