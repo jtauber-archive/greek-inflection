@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
+from characters import strip_length
 import yaml
 
-from characters import strip_length
+from utils import Counter
 
 from verbs import Lexicon
 
@@ -14,6 +15,8 @@ TEST_FILES = [
 
 lexicon = Lexicon("lexicons/pratt.yaml")
 
+counter = Counter()
+
 for TEST_FILE in TEST_FILES:
     with open(TEST_FILE) as f:
         for test in yaml.load(f):
@@ -23,8 +26,13 @@ for TEST_FILE in TEST_FILES:
             for parse, form in test.items():
                 predicted = lexicon.generate(lemma, parse)
                 if predicted is None:
-                    print("didn't know how to work out {} {} {}".format(lemma, parse, form))
+                    counter.fail("didn't know how to work out {} {} {}".format(lemma, parse, form))
                 elif strip_length(form) == strip_length(predicted):
+                    counter.success()
                     continue
                 elif strip_length(form) not in [strip_length(p) for p in predicted.split("/")]:
-                    print("{} {} got {} instead of {} in {}".format(lemma, parse, predicted, form, location))
+                    counter.fail("{} {} got {} instead of {} in {}".format(lemma, parse, predicted, form, location))
+                else:
+                    counter.skip("{} {} {} {} {}".format(lemma, parse, form, predicted, location))
+
+counter.results()
