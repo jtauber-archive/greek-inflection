@@ -59,11 +59,11 @@
         - ["F[AM][I]", "ἐσ!"]
         - ["F[AM][NP]", "ἐσ"]
     endings:
-        IAI.2S: σθα/ς
+        # IAI.2S: σθα/ς
         IAI.2P: τε/στε
         FMI.3S: ται
-        IAI.3S: ν
-        IAI.1S: +/ν
+        # IAI.3S: ν
+        # IAI.1S: +/ν
         PAI.3P: σι(ν)
     accents:
         PAP: ὤν
