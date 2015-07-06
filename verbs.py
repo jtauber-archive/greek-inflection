@@ -130,13 +130,13 @@ class Lexicon:
                     # @@@ raise error?
                     return
             base_endings = []
-            default = None
+            default = []
             for rule in pairs:
                 s1, s234, s5 = rule.split("|")
                 s2, s34 = s234.split(">")
                 s3, s4 = s34.split("<")
 
-                if stem.endswith(s1 + s2):
+                if stem.endswith(strip_accents(s1 + s2)):
                     if s2:
                         base = stem[:-len(s2)]
                     else:
@@ -152,11 +152,11 @@ class Lexicon:
                 if s1 + s2:
                     base_endings.append((base, ending_list))
                 else:
-                    default = (base, ending_list)
+                    default.append((base, ending_list))
 
             # only use default if there are no other options
-            if len(base_endings) == 0 and default:
-                base_endings = [default]
+            if len(base_endings) == 0 and len(default) > 0:
+                base_endings = default
 
             for base, ending_list in base_endings:
                 for ending in ending_list:
