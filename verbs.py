@@ -122,6 +122,7 @@ class Lexicon:
             return
 
         for stem in stems:
+            stem = phon_pre(stem)[0]  # @@@
             pairs = stemming_rules[parse]
             while isinstance(pairs, dict) and "ref" in pairs:
                 if pairs["ref"] in stemming_rules:
