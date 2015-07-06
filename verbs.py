@@ -76,12 +76,9 @@ class Lexicon:
             ending_override = self.lexicon[lemma].get("endings", {}).get(parse)
 
         if stems is None:
-            stems = self.stems_from_parts.stems(lemma, parse)
+            return
         else:
             stems = stems.split("/")
-
-        if stems is None:
-            return
 
         if "." in parse:
             tvm, pn = parse.split(".")
