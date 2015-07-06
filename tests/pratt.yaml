@@ -111,7 +111,7 @@
 
     lemma: δίδωμι
 
-    PAP.NSM: διδούς
+    # PAP.NSM: διδούς
     PAP.GSM: διδόντος  # implied by given stem
     PAP.NSF: διδοῦσα
     PAP.GSF: διδούσης  # implied by given stem
@@ -354,18 +354,18 @@
     AAP.NSN: ἕν
     AAP.GSN: ἕντος  # implied by given stem
 
--
-    location: §32
-    test_length: false
-
-    lemma: ἵστημι
-
-    AAP.NSM: στάς
-    AAP.GSM: στάντος  # implied by given stem
-    AAP.NSF: στᾶσα
-    AAP.GSF: στάσης  # implied by given stem
-    AAP.NSN: στάν
-    AAP.GSN: στάντος  # implied by given stem
+# -
+#     location: §32
+#     test_length: false
+#
+#     lemma: ἵστημι
+#
+#     AAP.NSM: στάς
+#     AAP.GSM: στάντος  # implied by given stem
+#     AAP.NSF: στᾶσα
+#     AAP.GSF: στάσης  # implied by given stem
+#     AAP.NSN: στάν
+#     AAP.GSN: στάντος  # implied by given stem
 
 -
     location: §32
@@ -409,7 +409,7 @@
     XAP.APM: λελυκότας
 
     XAP.NSF: λελυκυῖα
-    XAP.GSF: λελυκυίας
+#    XAP.GSF: λελυκυίας
     XAP.DSF: λελυκυίᾳ
     XAP.ASF: λελυκυῖαν
     XAP.NPF: λελυκυῖαι
@@ -560,15 +560,15 @@
     AMP.NSF: θεμένη
     AMP.NSN: θέμενον
 
--
-    location: §37
-    test_length: false
-
-    lemma: ἵστημι
-
-    AMP.NSM: στάμενος
-    AMP.NSF: σταμένη
-    AMP.NSN: στάμενον
+# -
+#     location: §37
+#     test_length: false
+#
+#     lemma: ἵστημι
+#
+#     AMP.NSM: στάμενος
+#     AMP.NSF: σταμένη
+#     AMP.NSN: στάμενον
 
 -
     location: §37
@@ -749,7 +749,7 @@
     FMI.3P: λύσονται
 
     FPI.1S: λυθήσομαι
-    FPI.2S: λυθήσῃ
+    # FPI.2S: λυθήσῃ
     FPI.3S: λυθήσεται
     FPI.1P: λυθησόμεθα
     FPI.2P: λυθήσεσθε
