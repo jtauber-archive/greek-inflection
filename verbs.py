@@ -63,11 +63,17 @@ class Lexicon:
         with open(lexicon) as f:
             self.lexicon.update(yaml.load(f))
 
-    def regex_list(self, lemma, parse):
+    def regex_list(self, lemma, parse, context):
+        if lemma == "ἵστημι":
+            print(lemma, parse, context)
         result = None
         if "stems" not in self.lexicon[lemma]:
             raise KeyError(lemma)
         for k, v in self.lexicon[lemma]["stems"].items():
+            if "/" in k:
+                k, context_to_match = k.split("/")
+                if not re.match(context_to_match, context):
+                    continue
             regex = {
                 "1-": "P",
                 "1+": "I",
@@ -75,6 +81,9 @@ class Lexicon:
                 "3-": "A[AM][NP]",
                 "3+": "A[AM][I]",
                 "4-": "XA",
+                "4-S": "XAI..S",
+                "4-P": "XAI..P",
+                "4-NP": "XA[NP]",
                 "4+": "YA",
                 "5-": "X[MP]",
                 "5+": "Y[MP]",
@@ -87,9 +96,11 @@ class Lexicon:
         for k, v in self.lexicon[lemma].get("stem_overrides", []):
             if re.match(k, parse):
                 result = v
+        if lemma == "ἵστημι":
+            print(result)
         return result
 
-    def generate(self, lemma, parse, allow_form_override=True):
+    def generate(self, lemma, parse, allow_form_override=True, context=None):
         answers = []
         stems = None
         accent_override = None
@@ -102,7 +113,7 @@ class Lexicon:
                 if answer:
                     return answer
 
-            stems = self.regex_list(lemma, parse)
+            stems = self.regex_list(lemma, parse, context)
 
             if "." in parse:
                 accents = self.lexicon[lemma].get("accents", {}).get(parse.split(".")[0])

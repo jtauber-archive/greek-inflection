@@ -24,7 +24,7 @@ for TEST_FILE in TEST_FILES:
             location = test.pop("location", "")
             test_length = test.pop("test_length", True)
             for parse, form in test.items():
-                predicted = lexicon.generate(lemma, parse)
+                predicted = lexicon.generate(lemma, parse, context=location)
                 if predicted is None:
                     counter.fail("didn't know how to work out {} {} {}".format(lemma, parse, form))
                 elif strip_length(form) == strip_length(predicted):
