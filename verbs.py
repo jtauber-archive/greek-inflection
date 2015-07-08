@@ -70,7 +70,7 @@ class Lexicon:
         for k, v in self.lexicon[lemma]["stems"].items():
             if "/" in k:
                 k, context_to_match = k.split("/")
-                if not re.match(context_to_match, context):
+                if not (context and re.match(context_to_match, context)):
                     continue
             regex = {
                 "1-": "P",
@@ -198,7 +198,8 @@ class Lexicon:
                                         phon_post(make_oxytone(word).replace("|", "")))
                             elif parse[0:3] == "AAP" and parse != "AAP.NSM":
                                 # calculate NSM
-                                nsms = self.generate(lemma, "AAP.NSM").split("/")
+                                nsms = self.generate(lemma, "AAP.NSM", context=context)
+                                nsms = nsms.split("/")
                                 for nsm in nsms:
                                     if nsm.endswith(("ών", "ούς")):
                                         for word in phon_pre(base + ending):
