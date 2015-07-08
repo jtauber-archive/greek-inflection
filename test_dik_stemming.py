@@ -23,8 +23,6 @@ for TEST_FILE in TEST_FILES:
 
             for parse, forms in test.items():
                 for form in forms.split("/"):
-                    norm = strip_length(form)
-
-                    stemmer.stem(location, lemma, parse, norm)
+                    stemmer.stem(location, lemma, parse, form, test_length)
 
 stemmer.counter.results()
