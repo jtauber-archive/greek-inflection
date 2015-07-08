@@ -64,8 +64,6 @@ class Lexicon:
             self.lexicon.update(yaml.load(f))
 
     def regex_list(self, lemma, parse, context):
-        if lemma == "ἵστημι":
-            print(lemma, parse, context)
         result = None
         if "stems" not in self.lexicon[lemma]:
             raise KeyError(lemma)
@@ -96,8 +94,6 @@ class Lexicon:
         for k, v in self.lexicon[lemma].get("stem_overrides", []):
             if re.match(k, parse):
                 result = v
-        if lemma == "ἵστημι":
-            print(result)
         return result
 
     def generate(self, lemma, parse, allow_form_override=True, context=None):
