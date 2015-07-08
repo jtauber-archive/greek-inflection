@@ -36,7 +36,7 @@ for book_num in range(1, 28):
         else:
             continue
 
-        stemmer.stem(row["bcv"], lemma, parse, norm)
+        stemmer.stem(row["bcv"], lemma, parse, norm, False)
         stemmer.citation(row["bcv"], lemma)
 
 
