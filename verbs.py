@@ -177,8 +177,6 @@ class Lexicon:
                             answers.extend(
                                 phon_post(make_oxytone(word).replace("|", "")))
                     else:
-                        # print(base, ending)
-
                         if parse[2] == "P":
                             if accent_override:
                                 for word in phon_pre(base + ending):
