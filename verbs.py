@@ -3,7 +3,7 @@ import re
 from characters import accent, strip_length
 from characters import strip_accents, remove_redundant_macron
 from accentuation import recessive, persistent, on_penult, make_oxytone
-from syllabify import add_necessary_breathing
+# from syllabify import add_necessary_breathing
 
 import yaml
 
@@ -15,53 +15,29 @@ with open("stemming.yaml") as f:
     stemming_rules = yaml.load(f)
 
 
-def rep(strings, search, replacements, remove_accent=False):
-    result = []
-    for string in strings:
-        if search in string and remove_accent:
-            string = strip_accents(string)
-        for replacement in replacements:
-            word = string.replace(search, replacement)
-            result.append(word)
-    return result
+def debreath(word):
+    word = word.replace("εἷ", "hεῖ")
+    word = word.replace("εἵ", "hεί")
+    word = word.replace("εἱ", "hει")
+    word = word.replace("ἕ", "hέ")
+    word = word.replace("ἑ", "hε")
+
+    return word
 
 
-def phon_pre(word):
-    words = [word]
+def rebreath(word):
+    word = word.replace("hεῖ", "εἷ")
+    word = word.replace("hεί", "εἵ")
+    word = word.replace("hει", "εἱ")
+    word = word.replace("hέ", "ἕ")
+    word = word.replace("hε", "ἑ")
+    # word = add_necessary_breathing(word)
+    word = remove_redundant_macron(word)
 
-    words = rep(words, "εἷ", ["hεῖ"])
-    words = rep(words, "εἵ", ["hεί"])
-    words = rep(words, "εἱ", ["hει"])
-    words = rep(words, "ἕ", ["hέ"])
-    words = rep(words, "ἑ", ["hε"])
-
-    return words
-
-
-def phon_post(word):
-    words = [word]
-
-    words = rep(words, "hεῖ", ["εἷ"])
-    words = rep(words, "hεί", ["εἵ"])
-    words = rep(words, "hει", ["εἱ"])
-    words = rep(words, "hέ", ["ἕ"])
-    words = rep(words, "hε", ["ἑ"])
-
-    words = rep(words, "+", [""])
-
-    words = [add_necessary_breathing(w) for w in words]
-    words = [remove_redundant_macron(w) for w in words]
-
-    return words
+    return word
 
 
-class Lexicon:
-
-    def __init__(self, lexicon):
-        self.lexicon = {}
-
-        with open(lexicon) as f:
-            self.lexicon.update(yaml.load(f))
+class Base:
 
     def regex_list(self, lemma, parse, context):
         result = None
@@ -96,6 +72,13 @@ class Lexicon:
                 result = v
         return result
 
+
+class Lexicon(Base):
+
+    def __init__(self, lexicon):
+        with open(lexicon) as f:
+            self.lexicon = yaml.load(f)
+
     def generate(self, lemma, parse, allow_form_override=True, context=None):
         answers = []
         stems = None
@@ -129,7 +112,7 @@ class Lexicon:
             return
 
         for stem in stems:
-            stem = phon_pre(stem)[0]  # @@@
+            stem = debreath(stem)
             pairs = stemming_rules[parse]
             while isinstance(pairs, dict) and "ref" in pairs:
                 if pairs["ref"] in stemming_rules:
@@ -169,67 +152,41 @@ class Lexicon:
             for base, ending_list in base_endings:
                 for ending in ending_list:
                     if accent(ending):
-                        for word in phon_pre(base + ending):
-                            answers.extend(
-                                phon_post(word.replace("|", "")))
+                        answers.append((base + ending).replace("|", ""))
                     elif is_enclitic:
-                        for word in phon_pre(base + ending):
-                            answers.extend(
-                                phon_post(make_oxytone(word).replace("|", "")))
+                        answers.append(make_oxytone(base + ending).replace("|", ""))
                     else:
                         if parse[2] == "P":
                             if accent_override:
-                                for word in phon_pre(base + ending):
-                                    answers.extend(
-                                        phon_post(persistent(word, accent_override)))
+                                answers.append(persistent(base + ending, accent_override))
                             elif parse == "AAP.NSM" and ending == "ων":
-                                for word in phon_pre(base + ending):
-                                    answers.extend(
-                                        phon_post(make_oxytone(word).replace("|", "")))
+                                answers.append(make_oxytone(base + ending).replace("|", ""))
                             elif parse == "AAP.NSM" and ending == "_3+ς":
-                                for word in phon_pre(base + ending):
-                                    answers.extend(
-                                        phon_post(make_oxytone(word).replace("|", "")))
+                                answers.append(make_oxytone(base + ending).replace("|", ""))
                             elif parse == "PAP.NSM" and ending == "_3+ς":
-                                for word in phon_pre(base + ending):
-                                    answers.extend(
-                                        phon_post(make_oxytone(word).replace("|", "")))
+                                answers.append(make_oxytone(base + ending).replace("|", ""))
                             elif parse[0:3] == "AAP" and parse != "AAP.NSM":
                                 # calculate NSM
                                 nsms = self.generate(lemma, "AAP.NSM", context=context)
                                 nsms = nsms.split("/")
                                 for nsm in nsms:
                                     if nsm.endswith(("ών", "ούς")):
-                                        for word in phon_pre(base + ending):
-                                            answers.extend(
-                                                phon_post(persistent(word, nsm)))
+                                        answers.append(persistent(base + ending, nsm))
                                     else:
-                                        for word in phon_pre(base + ending):
-                                            answers.extend(
-                                                phon_post(persistent(word, lemma)))
+                                        answers.append(persistent(base + ending, lemma))
                             elif parse[0:3] == "PAP" and parse != "PAP.NSM":
                                 # calculate NSM
                                 nsms = self.generate(lemma, "PAP.NSM").split("/")
                                 for nsm in nsms:
                                     nsm = strip_length(nsm)
-                                    for word in phon_pre(base + ending):
-                                        answers.extend(
-                                            phon_post(persistent(word, nsm)))
+                                    answers.append(persistent(base + ending, nsm))
                             else:
-                                for word in phon_pre(base + ending):
-                                    answers.extend(
-                                        phon_post(recessive(word, default_short=True)))
+                                answers.append(recessive(base + ending, default_short=True))
                         elif parse[0:3] in ["AAN", "XAN", "XMN", "XPN"]:
-                            for word in phon_pre(base + ending):
-                                answers.extend(
-                                    phon_post(on_penult(word, default_short=True)))
+                            answers.append(on_penult(base + ending, default_short=True))
                         elif parse[0:3] == "PAN" and stem.endswith("!"):
-                            for word in phon_pre(base + ending):
-                                answers.extend(
-                                    phon_post(on_penult(word, default_short=True)))
+                            answers.append(on_penult(base + ending, default_short=True))
                         else:
-                            for word in phon_pre(base + ending):
-                                answers.extend(
-                                    phon_post(recessive(word, default_short=True)))
+                            answers.append(recessive(base + ending, default_short=True))
 
-        return "/".join(remove_duplicates(answers))
+        return "/".join([rebreath(w) for w in remove_duplicates(answers)])

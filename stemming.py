@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import re
 
 from characters import strip_accents, strip_length
@@ -7,80 +5,27 @@ import yaml
 
 from utils import Counter
 
-
-def debreath(word):
-    word = word.replace("εἷ", "hεῖ")
-    word = word.replace("εἵ", "hεί")
-    word = word.replace("εἱ", "hει")
-    word = word.replace("ἕ", "hέ")
-    word = word.replace("ἑ", "hε")
-    return word
+from verbs import stemming_rules, debreath, rebreath, Base
 
 
-def rebreath(word):
-    word = word.replace("hεῖ", "εἷ")
-    word = word.replace("hεί", "εἵ")
-    word = word.replace("hει", "εἱ")
-    word = word.replace("hέ", "ἕ")
-    word = word.replace("hε", "ἑ")
-    return word
-
-
-class Stemmer:
+class Stemmer(Base):
 
     def __init__(self, lexicon):
-
-        with open("stemming.yaml") as f:
-            self.stemming_rules = yaml.load(f)
-
         with open(lexicon) as f:
             self.lexicon = yaml.load(f)
 
         self.counter = Counter()
-
-    def regex_list(self, lemma, parse, context):
-        result = None
-        if "stems" not in self.lexicon[lemma]:
-            raise KeyError(lemma)
-        for k, v in self.lexicon[lemma]["stems"].items():
-            if "/" in k:
-                k, context_to_match = k.split("/")
-                if not re.match(context_to_match, context):
-                    continue
-            regex = {
-                "1-": "P",
-                "1+": "I",
-                "2-": "F[AM]",
-                "3-": "A[AM][NP]",
-                "3+": "A[AM][I]",
-                "4-": "XA",
-                "4-S": "XAI..S",
-                "4-P": "XAI..P",
-                "4-NP": "XA[NP]",
-                "4+": "YA",
-                "5-": "X[MP]",
-                "5+": "Y[MP]",
-                "6-": "AP[NP]",
-                "6+": "AP[I]",
-                "7-": "FP",
-            }[k]
-            if re.match(regex, parse):
-                result = v
-        for k, v in self.lexicon[lemma].get("stem_overrides", []):
-            if re.match(k, parse):
-                result = v
-        return result
 
     def stem(self, location, lemma, parse, norm, test_length):
         stem_set = set()
 
         norm = debreath(norm)
 
-        if parse in self.stemming_rules:
-            pairs = self.stemming_rules[parse]
+        if parse in stemming_rules:
+            pairs = stemming_rules[parse]
             while isinstance(pairs, dict) and "ref" in pairs:
-                if pairs["ref"] in self.stemming_rules:
-                    pairs = self.stemming_rules[pairs["ref"]]
+                if pairs["ref"] in stemming_rules:
+                    pairs = stemming_rules[pairs["ref"]]
                 else:
                     self.counter.fail("ref to {} which doesn't exist".format(pairs["ref"]))
                     return
@@ -120,8 +65,8 @@ class Stemmer:
     def citation(self, location, lemma):
         stem_set = set()
 
-        if "citation" in self.stemming_rules:
-            pairs = self.stemming_rules["citation"]
+        if "citation" in stemming_rules:
+            pairs = stemming_rules["citation"]
             for entry in pairs:
                 if isinstance(entry, str):
                     s1, s234, s5 = entry.split("|")
