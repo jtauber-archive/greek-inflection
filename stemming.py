@@ -38,9 +38,15 @@ class Stemmer:
 
         self.counter = Counter()
 
-    def regex_list(self, lemma, parse):
+    def regex_list(self, lemma, parse, context):
         result = None
+        if "stems" not in self.lexicon[lemma]:
+            raise KeyError(lemma)
         for k, v in self.lexicon[lemma]["stems"].items():
+            if "/" in k:
+                k, context_to_match = k.split("/")
+                if not re.match(context_to_match, context):
+                    continue
             regex = {
                 "1-": "P",
                 "1+": "I",
@@ -48,6 +54,9 @@ class Stemmer:
                 "3-": "A[AM][NP]",
                 "3+": "A[AM][I]",
                 "4-": "XA",
+                "4-S": "XAI..S",
+                "4-P": "XAI..P",
+                "4-NP": "XA[NP]",
                 "4+": "YA",
                 "5-": "X[MP]",
                 "5+": "Y[MP]",
@@ -62,7 +71,7 @@ class Stemmer:
                 result = v
         return result
 
-    def stem(self, location, lemma, parse, norm):
+    def stem(self, location, lemma, parse, norm, test_length):
         stem_set = set()
 
         norm = debreath(norm)
@@ -77,6 +86,8 @@ class Stemmer:
                     return
             for entry in pairs:
                 if isinstance(entry, str):
+                    if not test_length:
+                        entry = strip_length(entry)
                     s1, s234, s5 = entry.split("|")
                     s2, s34 = s234.split(">")
                     s3, s4 = s34.split("<")
@@ -93,7 +104,7 @@ class Stemmer:
             self.counter.skip("no stemming rule for {} (form was {})".format(parse, norm))
             return
 
-        predicted = self.regex_list(lemma, parse)
+        predicted = self.regex_list(lemma, parse, context=location)
         if predicted:
             predicted = predicted.replace("|", "")
             if len(stem_set) > 0:
@@ -131,7 +142,7 @@ class Stemmer:
 
         citation_parse = self.lexicon[lemma].get("citation", "PAI.1S")
 
-        predicted = self.regex_list(lemma, citation_parse)
+        predicted = self.regex_list(lemma, citation_parse, context=location)
         if predicted:
             predicted = predicted.replace("|", "")
             if len(stem_set) > 0:

@@ -1,19 +1,58 @@
 import re
 
 from characters import accent, strip_length
+from characters import strip_accents, remove_redundant_macron
 from accentuation import recessive, persistent, on_penult, make_oxytone
+from syllabify import add_necessary_breathing
 
 import yaml
 
-from phonology import phon_pre, phon_post
+# from phonology import phon_pre, phon_post
 from utils import remove_duplicates
 
 
-with open("rules.yaml") as f:
-    rules = yaml.load(f)
+with open("stemming.yaml") as f:
+    stemming_rules = yaml.load(f)
 
-with open("endings.yaml") as f:
-    endings = yaml.load(f)
+
+def rep(strings, search, replacements, remove_accent=False):
+    result = []
+    for string in strings:
+        if search in string and remove_accent:
+            string = strip_accents(string)
+        for replacement in replacements:
+            word = string.replace(search, replacement)
+            result.append(word)
+    return result
+
+
+def phon_pre(word):
+    words = [word]
+
+    words = rep(words, "εἷ", ["hεῖ"])
+    words = rep(words, "εἵ", ["hεί"])
+    words = rep(words, "εἱ", ["hει"])
+    words = rep(words, "ἕ", ["hέ"])
+    words = rep(words, "ἑ", ["hε"])
+
+    return words
+
+
+def phon_post(word):
+    words = [word]
+
+    words = rep(words, "hεῖ", ["εἷ"])
+    words = rep(words, "hεί", ["εἵ"])
+    words = rep(words, "hει", ["εἱ"])
+    words = rep(words, "hέ", ["ἕ"])
+    words = rep(words, "hε", ["ἑ"])
+
+    words = rep(words, "+", [""])
+
+    words = [add_necessary_breathing(w) for w in words]
+    words = [remove_redundant_macron(w) for w in words]
+
+    return words
 
 
 class Lexicon:
@@ -24,11 +63,15 @@ class Lexicon:
         with open(lexicon) as f:
             self.lexicon.update(yaml.load(f))
 
-    def regex_list(self, lemma, parse):
+    def regex_list(self, lemma, parse, context):
         result = None
         if "stems" not in self.lexicon[lemma]:
             raise KeyError(lemma)
         for k, v in self.lexicon[lemma]["stems"].items():
+            if "/" in k:
+                k, context_to_match = k.split("/")
+                if not (context and re.match(context_to_match, context)):
+                    continue
             regex = {
                 "1-": "P",
                 "1+": "I",
@@ -36,6 +79,9 @@ class Lexicon:
                 "3-": "A[AM][NP]",
                 "3+": "A[AM][I]",
                 "4-": "XA",
+                "4-S": "XAI..S",
+                "4-P": "XAI..P",
+                "4-NP": "XA[NP]",
                 "4+": "YA",
                 "5-": "X[MP]",
                 "5+": "Y[MP]",
@@ -50,9 +96,8 @@ class Lexicon:
                 result = v
         return result
 
-    def generate(self, lemma, parse, allow_form_override=True):
+    def generate(self, lemma, parse, allow_form_override=True, context=None):
         answers = []
-
         stems = None
         accent_override = None
         is_enclitic = False
@@ -64,7 +109,7 @@ class Lexicon:
                 if answer:
                     return answer
 
-            stems = self.regex_list(lemma, parse)
+            stems = self.regex_list(lemma, parse, context)
 
             if "." in parse:
                 accents = self.lexicon[lemma].get("accents", {}).get(parse.split(".")[0])
@@ -80,44 +125,48 @@ class Lexicon:
         else:
             stems = stems.split("/")
 
-        if "." in parse:
-            tvm, pn = parse.split(".")
-        else:
-            tvm = parse
-            pn = None
-
-        if tvm not in rules:
+        if parse not in stemming_rules:
             return
 
         for stem in stems:
-            for rule in rules[tvm]:
-                steps = rule.split(" + ")
+            stem = phon_pre(stem)[0]  # @@@
+            pairs = stemming_rules[parse]
+            while isinstance(pairs, dict) and "ref" in pairs:
+                if pairs["ref"] in stemming_rules:
+                    pairs = stemming_rules[pairs["ref"]]
+                else:
+                    # @@@ raise error?
+                    return
+            base_endings = []
+            default = []
+            for rule in pairs:
+                s1, s234, s5 = rule.split("|")
+                s2, s34 = s234.split(">")
+                s3, s4 = s34.split("<")
 
-                if steps[0].startswith("stem"):
-                    ending_set = steps[1]
-
-                if steps[0] == "stem":
-                    base = stem
-                elif steps[0].startswith("stem/"):
-                    regex = steps[0].split("/")[1]
-                    m = re.match(regex, stem)
-                    if m:
-                        base = m.group(1)
+                if stem.endswith(strip_accents(s1 + s2)):
+                    if s2:
+                        base = stem[:-len(s2)]
                     else:
-                        continue
+                        base = stem
                 else:
                     continue
 
                 if ending_override:
                     ending_list = ending_override.split("/")
                 else:
-                    if pn:
-                        if pn not in endings[ending_set]:
-                            return
-                        ending_list = endings[ending_set][pn].split("/")
-                    else:
-                        ending_list = endings[ending_set].split("/")
+                    ending_list = [s3 + s5]
 
+                if s1 + s2:
+                    base_endings.append((base, ending_list))
+                else:
+                    default.append((base, ending_list))
+
+            # only use default if there are no other options
+            if len(base_endings) == 0 and len(default) > 0:
+                base_endings = default
+
+            for base, ending_list in base_endings:
                 for ending in ending_list:
                     if accent(ending):
                         for word in phon_pre(base + ending):
@@ -128,7 +177,7 @@ class Lexicon:
                             answers.extend(
                                 phon_post(make_oxytone(word).replace("|", "")))
                     else:
-                        if tvm[2] == "P":
+                        if parse[2] == "P":
                             if accent_override:
                                 for word in phon_pre(base + ending):
                                     answers.extend(
@@ -145,9 +194,10 @@ class Lexicon:
                                 for word in phon_pre(base + ending):
                                     answers.extend(
                                         phon_post(make_oxytone(word).replace("|", "")))
-                            elif tvm == "AAP" and parse != "AAP.NSM":
+                            elif parse[0:3] == "AAP" and parse != "AAP.NSM":
                                 # calculate NSM
-                                nsms = self.generate(lemma, "AAP.NSM").split("/")
+                                nsms = self.generate(lemma, "AAP.NSM", context=context)
+                                nsms = nsms.split("/")
                                 for nsm in nsms:
                                     if nsm.endswith(("ών", "ούς")):
                                         for word in phon_pre(base + ending):
@@ -157,7 +207,7 @@ class Lexicon:
                                         for word in phon_pre(base + ending):
                                             answers.extend(
                                                 phon_post(persistent(word, lemma)))
-                            elif tvm == "PAP" and parse != "PAP.NSM":
+                            elif parse[0:3] == "PAP" and parse != "PAP.NSM":
                                 # calculate NSM
                                 nsms = self.generate(lemma, "PAP.NSM").split("/")
                                 for nsm in nsms:
@@ -169,11 +219,11 @@ class Lexicon:
                                 for word in phon_pre(base + ending):
                                     answers.extend(
                                         phon_post(recessive(word, default_short=True)))
-                        elif tvm in ["AAN", "XAN", "XMN", "XPN"]:
+                        elif parse[0:3] in ["AAN", "XAN", "XMN", "XPN"]:
                             for word in phon_pre(base + ending):
                                 answers.extend(
                                     phon_post(on_penult(word, default_short=True)))
-                        elif tvm == "PAN" and stem.endswith("!"):
+                        elif parse[0:3] == "PAN" and stem.endswith("!"):
                             for word in phon_pre(base + ending):
                                 answers.extend(
                                     phon_post(on_penult(word, default_short=True)))

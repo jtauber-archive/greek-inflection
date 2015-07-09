@@ -4,10 +4,14 @@ from pysblgnt import morphgnt_rows
 
 from characters import strip_length
 
+from utils import Counter
+
 from verbs import Lexicon
 
 
 lexicon = Lexicon("lexicons/morphgnt.yaml")
+
+counter = Counter()
 
 for book_num in range(1, 28):
     for row in morphgnt_rows(book_num):
@@ -29,6 +33,13 @@ for book_num in range(1, 28):
 
         predicted = lexicon.generate(lemma, parse)
         if predicted is None:
-            print("didn't know how to work out {} {} {}".format(lemma, parse, norm))
-        elif norm not in [strip_length(p) for p in predicted.split("/")]:
-            print("{} {} got {} instead of {}".format(lemma, parse, predicted, norm))
+            counter.fail("didn't know how to work out {} {} {}".format(lemma, parse, norm))
+        elif strip_length(norm) == strip_length(predicted):
+            counter.success()
+            continue
+        elif strip_length(norm) not in [strip_length(p) for p in predicted.split("/")]:
+            counter.fail("{} {} got {} instead of {} in {}".format(lemma, parse, predicted, norm, row["bcv"]))
+        else:
+            counter.skip("{} {} {} {} {}".format(lemma, parse, norm, predicted, row["bcv"]))
+
+counter.results()
