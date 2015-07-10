@@ -7,7 +7,6 @@ from accentuation import recessive, persistent, on_penult, make_oxytone
 
 import yaml
 
-# from phonology import phon_pre, phon_post
 from utils import remove_duplicates
 
 
