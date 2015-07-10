@@ -16,7 +16,7 @@ class Stemmer(Base):
 
         self.counter = Counter()
 
-    def stem(self, location, lemma, parse, norm, test_length):
+    def get_stem_set(self, parse, norm, test_length):
         stem_set = set()
 
         norm = debreath(norm)
@@ -27,8 +27,7 @@ class Stemmer(Base):
                 if pairs["ref"] in stemming_rules:
                     pairs = stemming_rules[pairs["ref"]]
                 else:
-                    self.counter.fail("ref to {} which doesn't exist".format(pairs["ref"]))
-                    return
+                    raise Exception("ref to {} which doesn't exist".format(pairs["ref"]))
             for entry in pairs:
                 if isinstance(entry, str):
                     if not test_length:
@@ -46,6 +45,13 @@ class Stemmer(Base):
                 if re.match(regex_pair[0] + "$", norm):
                     stem_set.add(rebreath(strip_accents(re.sub(regex_pair[0], r"\1" + regex_pair[1], norm))))
         else:
+            return None
+
+        return stem_set
+
+    def stem(self, location, lemma, parse, norm, test_length):
+        stem_set = self.get_stem_set(parse, norm, test_length)
+        if stem_set is None:
             self.counter.skip("no stemming rule for {} (form was {})".format(parse, norm))
             return
 
@@ -63,25 +69,8 @@ class Stemmer(Base):
             self.counter.skip("[{}] couldn't predict {} {} {}; got stem_set: {}".format(location, lemma, parse, norm, stem_set))
 
     def citation(self, location, lemma):
-        stem_set = set()
-
-        if "citation" in stemming_rules:
-            pairs = stemming_rules["citation"]
-            for entry in pairs:
-                if isinstance(entry, str):
-                    s1, s234, s5 = entry.split("|")
-                    s2, s34 = s234.split(">")
-                    s3, s4 = s34.split("<")
-                    s3 = s3.replace("(", "\\(")
-                    s3 = s3.replace(")", "\\)")
-                    s5 = s5.replace("(", "\\(")
-                    s5 = s5.replace(")", "\\)")
-                    regex_pair = ["(.*{}){}{}".format(s1, s3, s5), s2]
-                else:
-                    regex_pair = entry
-                if re.match(regex_pair[0] + "$", lemma):
-                    stem_set.add(rebreath(strip_accents(re.sub(regex_pair[0], r"\1" + regex_pair[1], lemma))))
-        else:
+        stem_set = self.get_stem_set("citation", lemma, False)
+        if stem_set is None:
             self.counter.fail("! no stemming rule (lemma was {})".format(lemma))
             return
 

@@ -188,4 +188,4 @@ class Lexicon(Base):
                         else:
                             answers.append(recessive(base + ending, default_short=True))
 
-        return "/".join([rebreath(w) for w in remove_duplicates(answers)])
+        return "/".join(remove_duplicates(rebreath(w) for w in answers))
