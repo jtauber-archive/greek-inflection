@@ -49,12 +49,7 @@ class Stemmer(Base):
 
         return stem_set
 
-    def stem(self, location, lemma, parse, norm, test_length):
-        stem_set = self.get_stem_set(parse, norm, test_length)
-        if stem_set is None:
-            self.counter.skip("no stemming rule for {} (form was {})".format(parse, norm))
-            return
-
+    def predict_and_test(self, lemma, parse, norm, location, stem_set):
         predicted = self.regex_list(lemma, parse, context=location)
         if predicted:
             predicted = predicted.replace("|", "")
@@ -68,6 +63,14 @@ class Stemmer(Base):
         else:
             self.counter.skip("[{}] couldn't predict {} {} {}; got stem_set: {}".format(location, lemma, parse, norm, stem_set))
 
+    def stem(self, location, lemma, parse, norm, test_length):
+        stem_set = self.get_stem_set(parse, norm, test_length)
+        if stem_set is None:
+            self.counter.skip("no stemming rule for {} (form was {})".format(parse, norm))
+            return
+
+        self.predict_and_test(lemma, parse, norm, location, stem_set)
+
     def citation(self, location, lemma):
         stem_set = self.get_stem_set("citation", lemma, False)
         if stem_set is None:
@@ -75,16 +78,4 @@ class Stemmer(Base):
             return
 
         citation_parse = self.lexicon[lemma].get("citation", "PAI.1S")
-
-        predicted = self.regex_list(lemma, citation_parse, context=location)
-        if predicted:
-            predicted = predicted.replace("|", "")
-            if len(stem_set) > 0:
-                if any([strip_length(s) in stem_set for s in predicted.split("/")]):
-                    self.counter.success()
-                else:
-                    self.counter.fail("! got {} for {} citation (lexicon has {})".format(", ".join(stem_set), lemma, predicted))
-            else:
-                self.counter.fail("! [{}] didn't get any match for {}".format(location, lemma))
-        else:
-            self.counter.skip("! [{}] couldn't predict {}; got stem_set: {}".format(location, lemma, stem_set))
+        self.predict_and_test(lemma, citation_parse, lemma, location, stem_set)
