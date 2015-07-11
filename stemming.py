@@ -29,20 +29,17 @@ class Stemmer(Base):
                 else:
                     raise Exception("ref to {} which doesn't exist".format(pairs["ref"]))
             for entry in pairs:
-                if isinstance(entry, str):
-                    if not test_length:
-                        entry = strip_length(entry)
-                    s1, s234, s5 = entry.split("|")
-                    s2, s34 = s234.split(">")
-                    s3, s4 = s34.split("<")
-                    s3 = s3.replace("(", "\\(")
-                    s3 = s3.replace(")", "\\)")
-                    s5 = s5.replace("(", "\\(")
-                    s5 = s5.replace(")", "\\)")
-                    regex_pair = ["(.*{}){}{}".format(s1, s3, s5), s2]
-                else:
-                    regex_pair = entry
-                if re.match(regex_pair[0] + "$", norm):
+                if not test_length:
+                    entry = strip_length(entry)
+                s1, s234, s5 = entry.split("|")
+                s2, s34 = s234.split(">")
+                s3, s4 = s34.split("<")
+                s3 = s3.replace("(", "\\(")
+                s3 = s3.replace(")", "\\)")
+                s5 = s5.replace("(", "\\(")
+                s5 = s5.replace(")", "\\)")
+                regex_pair = ("(.*{}){}{}$".format(s1, s3, s5), s2)
+                if re.match(regex_pair[0], norm):
                     stem_set.add(rebreath(strip_accents(re.sub(regex_pair[0], r"\1" + regex_pair[1], norm))))
         else:
             return None
