@@ -46,12 +46,14 @@
 
 ἵημι:
     stems:
-        1-: ἱε!/ἱα!
+        1-: ἱε!
         1+: ἱε!/ἱα!
         3-: ἑ!
         3+: εἱ!/ἡκ
+    stem_overrides:
+        - ["PAI.3P", "ἱα!"]
     comments:
-        - or can 1+ be ἱε^?
+        - can the exceptions in the imperfective be better explained?
 
 ἵστημι:
     stems:
