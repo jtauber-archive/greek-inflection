@@ -21,8 +21,7 @@ for TEST_FILE in TEST_FILES:
             test_length = test.pop("test_length", True)
             location = test.pop("location", "")
 
-            for parse, forms in test.items():
-                for form in forms.split("/"):
-                    stemmer.stem(location, lemma, parse, form, test_length)
+            for parse, form in test.items():
+                stemmer.stem(location, lemma, parse, form, test_length)
 
 stemmer.counter.results()
