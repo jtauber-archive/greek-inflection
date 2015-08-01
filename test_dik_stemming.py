@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
 
-from test_stemming import test
+from test_stemming import test_stemming
 
-test("tests/dik.yaml", "lexicons/dik.yaml")
+test_stemming("tests/dik.yaml", "lexicons/dik.yaml")

@@ -5,7 +5,7 @@ from characters import strip_length
 from stemming import Stemmer
 
 
-def test(test_file, lexicon_file):
+def test_stemming(test_file, lexicon_file):
     stemmer = Stemmer(lexicon_file)
 
     with open(test_file) as f:
